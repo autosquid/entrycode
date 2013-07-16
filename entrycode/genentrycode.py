@@ -1,15 +1,16 @@
 # -*- coding:utf-8 -*-
 import numpy as np
 import random
+import cv2
 
 
 class EntryCodeGenerator:
 
     def __init__(self):
         self.bg_sz = (150, 50)
+        random.seed()
 
     def genbgimg(self):
-        random.seed(19871001)
         rnd_color_chanel = [0] * 6
         for i in range(0, 6):
             rnd_color_chanel[i] = random.randint(255 - 30, 255)
@@ -26,7 +27,71 @@ class EntryCodeGenerator:
 
         return bg
 
+    def genrandstring(self, dig_bits=4):
+        t = ['a'] * dig_bits
+        candi = range(ord('A'), ord('Z')) + range(ord('0'), ord('9'))
+        for i in range(0, dig_bits):
+            up = len(candi)
+            t[i] = chr(candi[random.randint(0, up - 1)])
+
+        return ''.join(t)
+
+    def addtext(self, im, text):
+        text_sz = min(self.bg_sz[1] * 0.68, self.bg_sz[0] * 0.25 * 0.9)
+        randh_limit = im.shape[0] - text_sz
+        randw_limit = im.shape[1] / 4 - text_sz
+        randw_limit = randw_limit * 4
+        randh_limit = randh_limit * 0.5
+
+        sz = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 1, 4)
+
+        fontScale = text_sz / sz[0][1]
+
+        for i in range(0, 4):
+            lorr = random.choice([-1, 1])
+            cv2.putText(
+                im, text[i], (
+                    max(0, i * im.shape[1] / 4 + lorr * int(
+                        random.uniform(randw_limit * 0.5, randw_limit))),
+                    im.shape[0] - 5 - int(
+                        sz[1] * 0.5) - int(
+                            random.uniform(-randh_limit, randh_limit))),
+                cv2.FONT_HERSHEY_SIMPLEX, fontScale * random.uniform(0.8, 1), (0, 0, 0), 5)
+
+        return im
+
+    def gen(self, cnt=1):
+        ims = []
+        codes = []
+
+        while cnt > 0:
+            cnt = cnt - 1
+            bg = self.genbgimg()
+            text = self.genrandstring()
+            im = self.addtext(bg, text)
+            ims.append(im)
+            codes.append(text)
+
+        return ims, codes
+
+
+def test_gen_bg():
+    g = EntryCodeGenerator()
+    g.genbgimg()
+
+
+def test_gen_string():
+    g = EntryCodeGenerator()
+    print g.genrandstring()
 
 if __name__ == '__main__':
     g = EntryCodeGenerator()
-    g.genbgimg()
+    bg = g.genbgimg()
+    txt = g.genrandstring()
+    im = g.addtext(bg, txt)
+
+    a, b = g.gen()
+    print type(a)
+    print len(a)
+    c, d = g.gen(2)
+    print len(c)
