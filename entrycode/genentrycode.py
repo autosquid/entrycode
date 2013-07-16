@@ -49,6 +49,7 @@ class EntryCodeGenerator:
 
         for i in range(0, 4):
             lorr = random.choice([-1, 1])
+            color = (random.randint(0,255),random.randint(0,255),random.randint(0,255))
             cv2.putText(
                 im, text[i], (
                     max(0, i * im.shape[1] / 4 + lorr * int(
@@ -56,9 +57,26 @@ class EntryCodeGenerator:
                     im.shape[0] - 5 - int(
                         sz[1] * 0.5) - int(
                             random.uniform(-randh_limit, randh_limit))),
-                cv2.FONT_HERSHEY_SIMPLEX, fontScale * random.uniform(0.8, 1), (0, 0, 0), 5)
+                cv2.FONT_HERSHEY_SIMPLEX, fontScale * random.uniform(0.8, 1), color, 5)
 
         return im
+
+    def addnoise(self,im):
+        # add line
+        line_cnt = 50
+        color = (8*16,8*16,8*16)
+        print im.shape
+        while line_cnt > 0:
+            line_cnt = line_cnt-1
+            x = random.randint(0,im.shape[1])
+            y = random.randint(0,im.shape[0])
+            x2 = random.randint(0,im.shape[1])
+            y2 = random.randint(0,im.shape[0])
+            cv2.line(im,(x,y),(x2,y2),color)
+
+        cv2.imwrite('addnoise.bmp',im)
+        return im
+
 
     def gen(self, cnt=1):
         ims = []
@@ -89,9 +107,10 @@ if __name__ == '__main__':
     bg = g.genbgimg()
     txt = g.genrandstring()
     im = g.addtext(bg, txt)
+    g.addnoise(im)
 
-    a, b = g.gen()
-    print type(a)
-    print len(a)
-    c, d = g.gen(2)
-    print len(c)
+   # a, b = g.gen()
+   # print type(a)
+   # print len(a)
+   # c, d = g.gen(2)
+   # print len(c)
